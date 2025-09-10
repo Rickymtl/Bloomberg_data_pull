@@ -18,7 +18,7 @@ setup(
     license='MIT',
     install_requires=[
         'pandas>=1.0.0',
-        # 'blpapi',
+        'blpapi',
         'requests>=2.25.1',
     ],
     classifiers=[

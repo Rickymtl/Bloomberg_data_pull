@@ -1,3 +1,4 @@
 .DS_Store
 /data_pull/__pycache__
 /data_pull.egg-info
+/.venv
