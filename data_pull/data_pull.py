@@ -1,6 +1,9 @@
 # Import the necessary libraries
 import blpapi
 import pandas as pd
+from datetime import date, timedelta
+import datetime
+from itertools import product
 
 # Define constants for the API session
 SESSION_STARTED = blpapi.Name("SessionStarted")
@@ -57,7 +60,7 @@ def get_bdh_data(tickers, fields, start_date, end_date):
                 field_data = sec_data.getElement("fieldData")
                 for i in range(field_data.numValues()):
                     row = field_data.getValueAsElement(i)
-                    date = row.getElementAsDatetime("date").date()
+                    date = row.getElementAsDatetime("date")
                     for field in fields:
                         if row.hasElement(field):
                             value = row.getElementAsFloat(field)
@@ -73,21 +76,44 @@ def get_bdh_data(tickers, fields, start_date, end_date):
     pivot_df = df.pivot_table(index='date', columns=['ticker', 'field'], values='value')
     return pivot_df
 
+def generate_tickers():
+    result = []
+    start_date = date(2022,1,1)
+    end_date = datetime.date.today()
+    delta = timedelta(days=1)
+    while start_date < end_date:
+        result.append(start_date.strftime("%m/%d/%y"))
+        start_date += delta
+    options = ["C", "P"]
+    strikes = [5*i for i in range(80,161)]
+    all_combos = list(product(result, options, strikes))
+    all_tickers = [f"SPY US {i[0]} {i[1]}{i[2]} Equity" for i in all_combos]
+    print(all_tickers[:5])
+    print(len(all_tickers))
+    return all_tickers
+
+
 def main():
-    print("Data pull module is ready to use.")
-    # You can add code here to call get_bdh_data with specific parameters if needed.
+    print("Starting data pull...")
+    all_tickers = generate_tickers()
+    for tickers_to_load in all_tickers:
+    # tickers_to_load = ["SPY US 10/18/25 P625 Equity"]
+        # fields_to_load = ["OPT_IMPLIED_VOLATILITY_MID"]
+        fields_to_load = ["IVOL_MID"]
+
+        start = "20220101"
+        end = "20250912"
+        # mn
+        historical_data = get_bdh_data(tickers_to_load, fields_to_load, start, end)
+        #
+        if historical_data is not None:
+            print("Successfully downloaded data:")
+            print(historical_data.head())
+            if not historical_data.empty:
+                historical_data.to_csv(f"out/{tickers_to_load[0]}.csv")
+        # You can add code here to call get_bdh_data with specific parameters if needed.
     
 # --- Example Usage ---
 if __name__ == '__main__':
     main()
-    # print("Starting data pull...")
-    # tickers_to_load = ["AAPL US Equity", "MSFT US Equity"]
-    # fields_to_load = ["PX_LAST", "PX_VOLUME"]
-    # start = "20240101"
-    # end = "20241231"
-    
-    # historical_data = get_bdh_data(tickers_to_load, fields_to_load, start, end)
-    
-    # if historical_data is not None:
-    #     print("Successfully downloaded data:")
-    #     print(historical_data.head())
+    # generate_tickers()
