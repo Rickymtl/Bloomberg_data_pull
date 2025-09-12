@@ -77,19 +77,24 @@ def get_bdh_data(tickers, fields, start_date, end_date):
     return pivot_df
 
 def generate_tickers():
-    result = []
-    start_date = date(2022,1,1)
-    end_date = datetime.date.today()
-    delta = timedelta(days=1)
-    while start_date < end_date:
-        result.append(start_date.strftime("%m/%d/%y"))
-        start_date += delta
-    options = ["C", "P"]
-    strikes = [5*i for i in range(80,161)]
-    all_combos = list(product(result, options, strikes))
-    all_tickers = [f"SPY US {i[0]} {i[1]}{i[2]} Equity" for i in all_combos]
-    print(all_tickers[:5])
-    print(len(all_tickers))
+    # result = []
+    # start_date = date(2022,1,1)
+    # end_date = datetime.date.today()
+    # delta = timedelta(days=1)
+    # while start_date < end_date:
+    #     result.append(start_date.strftime("%m/%d/%y"))
+    #     start_date += delta
+    # options = ["C", "P"]
+    # strikes = [5*i for i in range(80,161)]
+    # all_combos = list(product(result, options, strikes))
+    # all_tickers = [f"SPY US {i[0]} {i[1]}{i[2]} Equity" for i in all_combos]
+    # print(all_tickers[:5])
+    # print(len(all_tickers))
+    all_tickers = []
+    df = pd.read_csv("tickers.csv")
+    for index, row in df.iterrows():
+        all_tickers.append(row['Security'])
+    print(all_tickers)
     return all_tickers
 
 
@@ -108,6 +113,7 @@ def main():
         #
         if historical_data is not None:
             print("Successfully downloaded data:")
+            print(tickers_to_load)
             print(historical_data.head())
             if not historical_data.empty:
                 historical_data.to_csv(f"out/{tickers_to_load[0]}.csv")
