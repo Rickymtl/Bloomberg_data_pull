@@ -1,5 +1,7 @@
 # Import the necessary libraries
 import blpapi
+import os
+import sys
 import pandas as pd
 from datetime import date, timedelta
 import datetime
@@ -94,32 +96,42 @@ def generate_tickers():
     df = pd.read_csv("tickers.csv")
     for index, row in df.iterrows():
         all_tickers.append(row['Security'])
-    print(all_tickers)
+    # print(all_tickers)
     return all_tickers
 
 
-def main():
+def main(tickers, fields):
     print("Starting data pull...")
-    all_tickers = generate_tickers()
-    for tickers_to_load in all_tickers:
-    # tickers_to_load = ["SPY US 10/18/25 P625 Equity"]
-        # fields_to_load = ["OPT_IMPLIED_VOLATILITY_MID"]
-        fields_to_load = ["IVOL_MID"]
+    # all_tickers = generate_tickers()
+    # for tickers_to_load in all_tickers:
+    # tickers_to_load = ["SPY US 10/17/25 P625 Equity"]
+    # tickers_to_load = all_tickers
+    # fields_to_load = ["OPT_IMPLIED_VOLATILITY_MID"]
+    # fields_to_load = ["IVOL_MID"]
 
-        start = "20220101"
-        end = "20250912"
-        # mn
-        historical_data = get_bdh_data(tickers_to_load, fields_to_load, start, end)
-        #
-        if historical_data is not None:
-            print("Successfully downloaded data:")
-            print(tickers_to_load)
-            print(historical_data.head())
-            if not historical_data.empty:
-                historical_data.to_csv(f"out/{tickers_to_load[0]}.csv")
+    tickers_to_load = [tickers]
+    fields_to_load = [fields]
+
+    start = "20220101"
+    end = "20250912"
+    # mn
+    historical_data = get_bdh_data(tickers_to_load, fields_to_load, start, end)
+    #
+    if historical_data is not None:
+        print("Successfully downloaded data:")
+        print(tickers_to_load)
+        print(historical_data.head())
+
+        if not historical_data.empty:
+            os.makedirs("out", exist_ok=True)
+            ticker = tickers_to_load[0].replace(" /", "")
+            historical_data.to_csv(f"out/{ticker}.csv")
         # You can add code here to call get_bdh_data with specific parameters if needed.
     
 # --- Example Usage ---
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) < 3:
+        main("VIX Index", "PX_LAST")
+    else:
+        main(sys.argv[1], sys.argv[2])
     # generate_tickers()
